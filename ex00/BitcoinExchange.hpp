@@ -6,6 +6,7 @@
 #include <map>
 #include <fstream>
 #include <exception>
+#include <sstream>
 
 class BitcoinExchange
 {
@@ -18,7 +19,15 @@ class BitcoinExchange
 		BitcoinExchange& operator=(const BitcoinExchange& other);
 		~BitcoinExchange();
 
+		class LoadException : public std::exception
+		{
+			const char* what() const throw();
+		};
 
+		class ProcessException : public std::exception
+		{
+			const char* what() const throw();
+		};
 
 		void loadData(const std::string& data);
 };
