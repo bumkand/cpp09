@@ -11,6 +11,7 @@ int	main(int arc, char* arg[])
 	try
 	{
 		ex.loadData("data.csv");
+		ex.processInput(arg[1]);
 	}
 	catch(const std::exception& e)
 	{

@@ -30,6 +30,7 @@ class BitcoinExchange
 		};
 
 		void loadData(const std::string& data);
+		void processInput(const std::string& data);
 };
 
 
