@@ -26,12 +26,12 @@ BitcoinExchange::~BitcoinExchange()
 
 const char* BitcoinExchange::LoadException::what() const throw()
 {
-	return "Loading data from data.csv failed";
+	return "Error: could not open file";
 }
 
 const char* BitcoinExchange::ProcessException::what() const throw()
 {
-	return "Problem with processing input file";
+	return "Error: could not open file";
 }
 
 void BitcoinExchange::loadData(const std::string& data)
@@ -50,9 +50,11 @@ void BitcoinExchange::loadData(const std::string& data)
 			if (line.find(',') == std::string::npos)
 				continue ;
 			date = line.substr(0, line.find(','));
+			std::stringstream sd(date);
+			sd >> date;
 			num = line.substr(line.find(',') + 1);
-			std::stringstream ss(num);
-			ss >> value;
+			std::stringstream sn(num);
+			sn >> value;
 
 			if (date == "date")
 				continue ;
@@ -60,17 +62,6 @@ void BitcoinExchange::loadData(const std::string& data)
 			_database[date] = value;
 		}
 		file.close();
-
-		// ------ Print Map Container ------
-
-		//std::map<std::string, double>::iterator	it_beg = _database.begin();
-		//std::map<std::string, double>::iterator it_end = _database.end();
-		//while (it_beg != it_end)
-		//{
-		//	std::cout << it_beg->first << " | " << it_beg->second << std::endl;
-		//	++it_beg;
-		//}
-
 	}
 	else
 	{
@@ -78,20 +69,81 @@ void BitcoinExchange::loadData(const std::string& data)
 	}
 }
 
-int	checkDate(std::string date)
+bool	checkDate(std::string date)
 {
 	std::stringstream	sd(date);
 	sd >> date;
 	if (date == "date")
-		return 1;
+		return false;
 	if (date.length() != 10)
 	{
 		std::cout << "Error: bad input => " << date << std::endl;
-		return 1;
+		return false;
 	}
-	
+	for (int i = 0; i < 10; i++)
+	{
+		if ((i == 4 || i == 7) && date[i] == '-')
+			continue ;
+		if (date[i] < '0' || date[i] > '9')
+		{
+			std::cout << "Error: bad input => " << date << std::endl;
+			return false;
+		}
+	}
+	std::stringstream	ss(date);
+	int			year;
+	int			month;
+	int			day;
+	ss >> year;
+	ss >> month;
+	month *= -1;
+	ss >> day;
+	day *= -1;
 
-	return 0;
+	if (year < 2009 || (year == 2009 && month == 1 && day == 1))
+	{
+		std::cout << "Error: Date is too early to be in database => " << date << std::endl;
+		return false;
+	}
+	if (month > 12)
+	{
+		std::cout << "Error: bad input => " << date << std::endl;
+		return false;
+	}
+	if ((month == 1 || month == 3 || month == 5 || month == 7
+		|| month == 8 || month == 10 || month == 12) && day > 31)
+	{
+		std::cout << "Error: bad input => " << date << std::endl;
+		return false;
+	}
+	if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30)
+	{
+		std::cout << "Error: bad input => " << date << std::endl;
+		return false;
+	}
+	if (month == 2 && (((year % 4 == 0) && day > 29) || ((year % 4 != 0) && day > 28)))
+	{
+		std::cout << "Error: bad input => " << date << std::endl;
+		return false;
+	}
+
+	return true;
+}
+
+bool	checkValue(double value)
+{
+	if (value < 0)
+	{
+		std::cout << "Error: not a positive number." << std::endl;
+		return false;
+	}
+	if (value > 1000)
+	{
+		std::cout << "Error: too large number." << std::endl;
+		return false;
+	}
+
+	return true;
 }
 
 void BitcoinExchange::processInput(const std::string& data)
@@ -107,24 +159,39 @@ void BitcoinExchange::processInput(const std::string& data)
 
 		while (getline(file, line))
 		{
-			if (line.find('|') == std::string::npos)
+			if (line.empty() || line.find('|') == std::string::npos)
+			{
+				if (!line.empty())
+					std::cout << "Error: bad input => " << line << std::endl;
 				continue ;
-			
+			}
 			date = line.substr(0, line.find('|'));
-			if (checkDate(date))
+			if (checkDate(date) == false)
 				continue ;
+			std::stringstream sd(date);
+			sd >> date;
 			
 			num = line.substr(line.find('|') + 1);
-
 			std::stringstream	sn(num);
 			sn >> value;
+			if (checkValue(value) == false)
+				continue ;
 
-			std::cout << date << " | " << value << std::endl;
-			
+			std::map<std::string, double>::iterator	it = _database.find(date);
+
+			if (it != _database.end())
+			{
+				std::cout << it->first << " => " << value << " = " << value * it->second << std::endl;
+			}
+			else
+			{
+				it = _database.lower_bound(date);
+				it--;
+				std::cout << it->first << " => " << value << " = " << value * it->second << std::endl;
+			}
 		}
 		file.close();
 	}
 	else
 		throw ProcessException();
 }
-
