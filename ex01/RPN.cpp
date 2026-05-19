@@ -29,44 +29,93 @@ const char* RPN::ErrorException::what() const throw()
 	return "Error";
 }
 
-int	count(int j, int m, std::string data, int i)
+int RPN::count(int left, int right, std::string data)
 {
-	if (data[i] == '+')
-		return j + m;
-	if (data[i] == '-')
-		return j - m;
-	if (data[i] == '*')
-		return j * m;
-	else
-		return j / m;
+	switch (data[0])
+	{
+	case '+':
+		return left + right;
+	case '-':
+		return left - right;
+	case '*':
+		return left * right;
+	case '/':
+		if (right == 0)
+			throw ErrorException();
+		return left / right;
+	default:
+		throw ErrorException();
+	}
+
+	//if (data[0] == '+')
+	//	return left + right;
+	//if (data[0] == '-')
+	//	return left - right;
+	//if (data[0] == '*')
+	//	return left * right;
+	//else
+	//	return left / right;
 	
 }
 
 void RPN::loadProcess(const std::string& data)
 {
-	std::string	num = data;
+	std::stringstream	ss(data);
+	std::string			token;
 
-	for (int i = 0; data[i]; i++)
+	while (ss >> token)
 	{
-		if (data[i] == ' ')
-			continue ;
-		if (data[i] >= '0' && data[i] <= '9')
+		if (token.size() != 1)
+			throw ErrorException();
+
+		if (isdigit(token[0]))
 		{
-			_value.push(data[i] - '0');
+			_value.push(token[0] - '0');
 			continue ;
 		}
-		if (data[i] == '+' || data[i] == '-'
-			|| data[i] == '*' || data[i] == '/')
+
+		if (token[0] == '+'	|| token[0] == '-'
+			|| token[0] == '*' || token[0] == '/')
 		{
-			int m = _value.top();
+			if (_value.size() < 2)
+				throw ErrorException();
+			int	right = _value.top();
 			_value.pop();
-			int j = _value.top();
+			int	left = _value.top();
 			_value.pop();
-			_value.push(count(j, m, data, i));
-			continue ;
+			_value.push(count(left, right, token));
 		}
 		else
 			throw ErrorException();
 	}
+	if (_value.size() != 1)
+		throw ErrorException();
 	std::cout << _value.top() << std::endl;
+
+
+	//std::string	num = data;
+
+	//for (int i = 0; data[i]; i++)
+	//{
+	//	if (data[i] == ' ')
+	//		continue ;
+	//	if (data[i] >= '0' && data[i] <= '9')
+	//	{
+	//		_value.push(data[i] - '0');
+	//		continue ;
+	//	}
+	//	if (data[i] == '+' || data[i] == '-'
+	//		|| data[i] == '*' || data[i] == '/')
+	//	{
+	//		int m = _value.top();
+	//		_value.pop();
+	//		int j = _value.top();
+	//		_value.pop();
+	//		_value.push(count(j, m, data, i));
+	//		continue ;
+	//	}
+	//	else
+	//		throw ErrorException();
+	//}
+	//std::cout << _value.top() << std::endl;
 }

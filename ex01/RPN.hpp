@@ -22,6 +22,7 @@ class RPN
 			const char* what() const throw();
 		};
 
+		int count(int left, int right, std::string data);
 		void loadProcess(const std::string& data);
 };
 
