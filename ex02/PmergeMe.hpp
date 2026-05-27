@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <iostream>
 #include <vector>
+#include <exception>
 
 class PmergeMe
 {
@@ -15,6 +16,14 @@ class PmergeMe
 		PmergeMe(const PmergeMe& other);
 		PmergeMe& operator=(const PmergeMe& other);
 		~PmergeMe();
+
+		class ErrorException : public std::exception
+		{
+			const char* what() const throw();
+		};
+
+		void	execute(int arc, char* arv[]);
+		void	checkArv(int arc, char* arv[]);
 };
 
 
