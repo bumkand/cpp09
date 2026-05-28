@@ -47,13 +47,26 @@ void PmergeMe::checkArv(int arc, char* arv[])
 {
 	if (arc < 2)
 		throw ErrorException();
+	std::string	s;
+	long int val;
+	std::vector<int>	vec;
 	for (int i = 1; arv[i]; i++)
 	{
-		int j = 0;
-		while (arv[i][j])
-		{
-			if (!(arv[i][j] >= '0' && arv[i][j] <= '9') || arv[i][j] != '+' || arv[i][j] != '-')
-				throw ErrorException();
-		}
+		s = arv[i];
+		std::istringstream ss(s);
+		
+		if (!(ss >> val))
+			throw ErrorException();
+		std::string leftover;
+		if (ss >> leftover)
+			throw ErrorException();
+		if (val < 0)
+			throw ErrorException();
+		if (val > std::numeric_limits<int>::max())
+			throw ErrorException();
+		int valid = static_cast<int>(val);
+		if (std::find(vec.begin(), vec.end(), valid) != vec.end())
+			throw ErrorException();
+		vec.push_back(valid);
 	}
 }

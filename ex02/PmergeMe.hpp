@@ -5,6 +5,9 @@
 #include <iostream>
 #include <vector>
 #include <exception>
+#include <sstream>
+#include <limits>
+#include <algorithm>
 
 class PmergeMe
 {
