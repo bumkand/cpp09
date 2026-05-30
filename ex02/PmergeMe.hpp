@@ -8,11 +8,13 @@
 #include <sstream>
 #include <limits>
 #include <algorithm>
+#include <sys/time.h>
 
 class PmergeMe
 {
 	private:
 		std::vector<int>	_v;
+		std::vector<int>	fjRecur(std::vector<int> input);
 
 	public:
 		PmergeMe();
@@ -27,6 +29,9 @@ class PmergeMe
 
 		void	execute(int arc, char* arv[]);
 		void	checkArv(int arc, char* arv[]);
+		void	fillCont(int arc, char* arv[]);
+		void	algo();
+		bool	hasStruggler(std::vector<int> input);
 };
 
 
