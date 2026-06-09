@@ -125,12 +125,21 @@ std::vector<int> PmergeMe::fjRecur(std::vector<int> input)
 	std::vector<int> big;
 	for (size_t i = 0; i < pair.size(); i++)
 		big.push_back(pair[i].second);
-		
+
 	std::vector<int> mainChain = fjRecur(big);
+
+	std::vector<std::pair<int, int> >	pend;
+	for (size_t i = 0; i < mainChain.size(); i++)
+	{
+		int j = 0;
+		while (mainChain[i] != pair[j].second)
+			j++;
+		pend.push_back(std::make_pair(pair[j].first, pair[j].second));
+	}
 
 	for (size_t i = 0; i < pair.size(); i++)
 	{
-		mainChain.insert(std::lower_bound(mainChain.begin(), mainChain.end(), pair[i].first), pair[i].first);
+		mainChain.insert(std::lower_bound(mainChain.begin(), mainChain.end(), pend[i].first), pend[i].first);
 	}
 	
 	if (struggler >= 0)
