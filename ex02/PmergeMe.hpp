@@ -32,6 +32,7 @@ class PmergeMe
 		void	fillCont(int arc, char* arv[]);
 		void	algo();
 		bool	hasStruggler(std::vector<int> input);
+		std::vector<size_t>	jacobNum(size_t num);
 };
 
 

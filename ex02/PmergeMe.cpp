@@ -131,20 +131,45 @@ std::vector<int> PmergeMe::fjRecur(std::vector<int> input)
 	std::vector<std::pair<int, int> >	pend;
 	for (size_t i = 0; i < mainChain.size(); i++)
 	{
-		int j = 0;
+		size_t j = 0;
 		while (mainChain[i] != pair[j].second)
 			j++;
 		pend.push_back(std::make_pair(pair[j].first, pair[j].second));
 	}
 
-	for (size_t i = 0; i < pair.size(); i++)
+	std::vector<size_t>	n = jacobNum(pend.size());
+	for (size_t i = 0; i < pend.size(); i++)
 	{
-		mainChain.insert(std::lower_bound(mainChain.begin(), mainChain.end(), pend[i].first), pend[i].first);
+		std::vector<int>::iterator	it = std::find(mainChain.begin(), mainChain.end(), pend[n[i]].second);
+		mainChain.insert(std::lower_bound(mainChain.begin(), it, pend[n[i]].first), pend[n[i]].first);
 	}
 	
 	if (struggler >= 0)
 		mainChain.insert(std::lower_bound(mainChain.begin(), mainChain.end(), struggler), struggler);
 	return mainChain;
+}
+
+std::vector<size_t> PmergeMe::jacobNum(size_t num)
+{
+	std::vector<size_t>	vec;
+	size_t	curr = 1;
+	size_t	prev = 0;
+	size_t	next = 0;
+
+	while (next < num)
+	{
+		for (size_t i = curr; i > prev; i--)
+			vec.push_back(i - 1);
+		next = curr + (2 * prev);
+		prev = curr;
+		curr = next;
+	}
+	if (next >= num)
+	{
+		for (size_t i = num; i > prev; i--)
+			vec.push_back(i - 1);
+	}
+	return vec;
 }
 
 void PmergeMe::algo()
