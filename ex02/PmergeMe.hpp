@@ -10,7 +10,7 @@
 #include <limits>
 #include <algorithm>
 #include <sys/time.h>
-#include <bits/stdc++.h>
+#include <cmath>
 
 class PmergeMe
 {
@@ -33,14 +33,15 @@ class PmergeMe
 
 		void						execute(int arc, char* arv[]);
 		void						checkArv(int arc, char* arv[]);
-		void						fillCont(int arc, char* arv[]);
+		void						fillContVec(int arc, char* arv[]);
+		void						fillContDeq(int arc, char* arv[]);
 
-		std::vector<int>			fjRecurVec(std::vector<int> input);
+		std::vector<int>			fjRecurVec(std::vector<int> &input);
 		bool						hasStrugglerVec(std::vector<int> input);
 		std::vector<int>			jacobNumVec(size_t num);
 		std::vector<int>::iterator	findLowerBoundVec(std::vector<int>::iterator first, std::vector<int>::iterator last, int val);
 
-		std::deque<int>				fjRecurDeq(std::deque<int> input);
+		std::deque<int>				fjRecurDeq(std::deque<int> &input);
 		bool						hasStrugglerDeq(std::deque<int> input);
 		std::deque<int>				jacobNumDeq(size_t num);
 		std::deque<int>::iterator	findLowerBoundDeq(std::deque<int>::iterator first, std::deque<int>::iterator last, int val);

@@ -41,42 +41,42 @@ const char* PmergeMe::ErrorException::what() const throw()
 	return "Error";
 }
 
-int F(int n)
-{
-    int sum = 0;
-    for (int k = 1; k <= n; ++k) {
-        double value = (3.0 / 4.0) * k;
-        sum += static_cast<int>(ceil(log2(value)));
-    }
-    return sum;
-}
+//int F(int n)
+//{
+//    int sum = 0;
+//    for (int k = 1; k <= n; ++k) {
+//        double value = (3.0 / 4.0) * k;
+//        sum += static_cast<int>(ceil(log2(value)));
+//    }
+//    return sum;
+//}
 
-void	isSorted(std::vector<int> v)
-{
-	for (size_t i = 0; i < (v.size() - 1); i++)
-	{
-		size_t j = i + 1;
-		if (v[i] > v[j])
-		{
-			std::cout << "Not sorted" << std::endl;
-			return ;
-		}
-	}
-	std::cout << "Sorted" << std::endl;
-}
+//void	isSorted(std::vector<int> v)
+//{
+//	for (size_t i = 0; i < (v.size() - 1); i++)
+//	{
+//		size_t j = i + 1;
+//		if (v[i] > v[j])
+//		{
+//			std::cout << "Not sorted" << std::endl;
+//			return ;
+//		}
+//	}
+//	std::cout << "Sorted" << std::endl;
+//}
 
 void PmergeMe::execute(int arc, char* arv[])
 {
 	try
 	{
 		checkArv(arc, arv);
-		fillCont(arc, arv);
 
 		// Sort Vector and Print Time
 		timeval	tim;
 		gettimeofday(&tim, NULL);
 		double	t1 = (tim.tv_sec * 1000000) + tim.tv_usec;
 
+		fillContVec(arc, arv);
 		_v = fjRecurVec(_v);
 
 		gettimeofday(&tim, NULL);
@@ -93,26 +93,27 @@ void PmergeMe::execute(int arc, char* arv[])
 			std::cout << _v[i] << " ";
 		}
 		std::cout << std::endl;
-		std::cout << "Time to process a range of 5 elements with std::vector<int> :	" << t2 - t1 << " us" << std::endl;
+		std::cout << "Time to process a range of " << _v.size() << " elements with std::vector<int> : " << t2 - t1 << " us" << std::endl;
 
-		isSorted(_v);
-		int max = F(_v.size());
-		std::cout << "Maximum comparisms: " << max << std::endl;
+		//isSorted(_v);
+		//int max = F(_v.size());
+		//std::cout << "Maximum comparisms: " << max << std::endl;
 
-		std::cout << "Vector counter: " << _countVec << std::endl;
+		//std::cout << "Vector counter: " << _countVec << std::endl;
 
 		// Sort Deque and Print Time
 		gettimeofday(&tim, NULL);
 		t1 = (tim.tv_sec * 1000000) + tim.tv_usec;
 
+		fillContDeq(arc, arv);
 		_d = fjRecurDeq(_d);
 
 		gettimeofday(&tim, NULL);
 		t2 = (tim.tv_sec * 1000000) + tim.tv_usec;
 
-		std::cout << "Time to process a range of 5 elements with std::deque<int> :	" << t2 - t1 << " us" << std::endl;
+		std::cout << "Time to process a range of " << _v.size() << " elements with std::deque<int> : " << t2 - t1 << " us" << std::endl;
 
-		std::cout << "Deque counter: " << _countDeq << std::endl;
+		//std::cout << "Deque counter: " << _countDeq << std::endl;
 	}
 	catch(const std::exception& e)
 	{
@@ -138,7 +139,7 @@ void PmergeMe::checkArv(int arc, char* arv[])
 		std::string leftover;
 		if (ss >> leftover)
 			throw ErrorException();
-		if (val < 0)
+		if (val < 1)
 			throw ErrorException();
 		if (val > std::numeric_limits<int>::max())
 			throw ErrorException();
@@ -146,19 +147,6 @@ void PmergeMe::checkArv(int arc, char* arv[])
 		if (std::find(vec.begin(), vec.end(), valid) != vec.end())
 			throw ErrorException();
 		vec.push_back(valid);
-	}
-}
-
-void PmergeMe::fillCont(int arc, char* arv[])
-{
-	for (int i = 1; i < arc; i++)
-	{
-		std::string s = arv[i];
-		std::istringstream ss(s);
-		int	val;
-		ss >> val;
-		_v.push_back(val);
-		_d.push_back(val);
 	}
 	std::cout << "Before:	";
 	for (int i = 0; i < (arc - 1); i++)
@@ -168,9 +156,33 @@ void PmergeMe::fillCont(int arc, char* arv[])
 			std::cout << "[...]";
 			break ;
 		}
-		std::cout << _v[i] << " ";
+		std::cout << vec[i] << " ";
 	}
 	std::cout << std::endl;
+}
+
+void PmergeMe::fillContVec(int arc, char* arv[])
+{
+	for (int i = 1; i < arc; i++)
+	{
+		std::string s = arv[i];
+		std::istringstream ss(s);
+		int	val;
+		ss >> val;
+		_v.push_back(val);
+	}
+}
+
+void PmergeMe::fillContDeq(int arc, char* arv[])
+{
+	for (int i = 1; i < arc; i++)
+	{
+		std::string s = arv[i];
+		std::istringstream ss(s);
+		int	val;
+		ss >> val;
+		_d.push_back(val);
+	}
 }
 
 
@@ -198,7 +210,7 @@ std::vector<int>::iterator PmergeMe::findLowerBoundVec(std::vector<int>::iterato
 	return first;
 }
 
-std::vector<int> PmergeMe::fjRecurVec(std::vector<int> input)
+std::vector<int> PmergeMe::fjRecurVec(std::vector<int> &input)
 {
 	if (input.size() < 2)
 		return input;
@@ -308,7 +320,7 @@ std::deque<int>::iterator PmergeMe::findLowerBoundDeq(std::deque<int>::iterator 
 	return first;
 }
 
-std::deque<int> PmergeMe::fjRecurDeq(std::deque<int> input)
+std::deque<int> PmergeMe::fjRecurDeq(std::deque<int> &input)
 {
 	if (input.size() < 2)
 		return input;
