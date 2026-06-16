@@ -41,6 +41,30 @@ const char* PmergeMe::ErrorException::what() const throw()
 	return "Error";
 }
 
+int F(int n)
+{
+    int sum = 0;
+    for (int k = 1; k <= n; ++k) {
+        double value = (3.0 / 4.0) * k;
+        sum += static_cast<int>(ceil(log2(value)));
+    }
+    return sum;
+}
+
+void	isSorted(std::vector<int> v)
+{
+	for (size_t i = 0; i < (v.size() - 1); i++)
+	{
+		size_t j = i + 1;
+		if (v[i] > v[j])
+		{
+			std::cout << "Not sorted" << std::endl;
+			return ;
+		}
+	}
+	std::cout << "Sorted" << std::endl;
+}
+
 void PmergeMe::execute(int arc, char* arv[])
 {
 	try
@@ -61,17 +85,21 @@ void PmergeMe::execute(int arc, char* arv[])
 		std::cout << "After:	";
 		for (size_t i = 0; i < _v.size(); i++)
 		{
-			//if (i == 5)
-			//{
-			//	std::cout << "[...]";
-			//	break ;
-			//}
+			if (i == 5)
+			{
+				std::cout << "[...]";
+				break ;
+			}
 			std::cout << _v[i] << " ";
 		}
 		std::cout << std::endl;
 		std::cout << "Time to process a range of 5 elements with std::vector<int> :	" << t2 - t1 << " us" << std::endl;
 
-		std::cout << _countVec << std::endl;
+		isSorted(_v);
+		int max = F(_v.size());
+		std::cout << "Maximum comparisms: " << max << std::endl;
+
+		std::cout << "Vector counter: " << _countVec << std::endl;
 
 		// Sort Deque and Print Time
 		gettimeofday(&tim, NULL);
@@ -83,6 +111,8 @@ void PmergeMe::execute(int arc, char* arv[])
 		t2 = (tim.tv_sec * 1000000) + tim.tv_usec;
 
 		std::cout << "Time to process a range of 5 elements with std::deque<int> :	" << t2 - t1 << " us" << std::endl;
+
+		std::cout << "Deque counter: " << _countDeq << std::endl;
 	}
 	catch(const std::exception& e)
 	{
@@ -152,7 +182,7 @@ bool PmergeMe::hasStrugglerVec(std::vector<int> input)
 	return false;
 }
 
-std::vector<int>::iterator PmergeMe::findLowerBound(std::vector<int>::iterator first, std::vector<int>::iterator last, int val)
+std::vector<int>::iterator PmergeMe::findLowerBoundVec(std::vector<int>::iterator first, std::vector<int>::iterator last, int val)
 {
 
 	while (first != last)
@@ -205,21 +235,28 @@ std::vector<int> PmergeMe::fjRecurVec(std::vector<int> input)
 		while (mainChain[i] != pair[j].second)
 			j++;
 		pend.push_back(std::make_pair(pair[j].first, pair[j].second));
+		if ((i + 1) == mainChain.size() && struggler >= 0)
+			pend.push_back(std::make_pair(struggler, struggler));
 	}
 
 	std::vector<int>	n = jacobNumVec(pend.size());
+
 	for (size_t i = 0; i < pend.size(); i++)
 	{
-		std::vector<int>::iterator	it = std::find(mainChain.begin(), mainChain.end(), pend[n[i]].second);
-		it = findLowerBound(mainChain.begin(), it, pend[n[i]].first);
-		mainChain.insert(it, pend[n[i]].first);
+		std::vector<int>::iterator	it;
+		if (pend[n[i]].first != pend[n[i]].second)
+		{
+			it = std::find(mainChain.begin(), mainChain.end(), pend[n[i]].second);
+			it = findLowerBoundVec(mainChain.begin(), it, pend[n[i]].first);
+			mainChain.insert(it, pend[n[i]].first);
+		}
+		else
+		{
+			it = findLowerBoundVec(mainChain.begin(), mainChain.end(), struggler);
+			mainChain.insert(it, struggler);
+		}
 	}
 	
-	if (struggler >= 0)
-	{
-		std::vector<int>::iterator	it = findLowerBound(mainChain.begin(), mainChain.end(), struggler);
-		mainChain.insert(it, struggler);
-	}
 	return mainChain;
 }
 
@@ -255,6 +292,22 @@ bool PmergeMe::hasStrugglerDeq(std::deque<int> input)
 	return false;
 }
 
+std::deque<int>::iterator PmergeMe::findLowerBoundDeq(std::deque<int>::iterator first, std::deque<int>::iterator last, int val)
+{
+
+	while (first != last)
+	{
+		int mid_range = std::distance(first, last) / 2;
+		std::deque<int>::iterator	mid = first + mid_range;
+		_countDeq++;
+		if (*mid < val)
+			first = mid + 1;
+		else
+			last = mid;
+	}
+	return first;
+}
+
 std::deque<int> PmergeMe::fjRecurDeq(std::deque<int> input)
 {
 	if (input.size() < 2)
@@ -269,9 +322,15 @@ std::deque<int> PmergeMe::fjRecurDeq(std::deque<int> input)
 	for (size_t i = 0; i < (input.size() - 1); i += 2)
 	{
 		if (input[i] < input[i + 1])
+		{
 			pair.push_back(std::make_pair(input[i], input[i + 1]));
+			_countDeq++;
+		}
 		else
+		{
 			pair.push_back(std::make_pair(input[i + 1], input[i]));
+			_countDeq++;
+		}
 	}
 	std::deque<int> big;
 	for (size_t i = 0; i < pair.size(); i++)
@@ -286,17 +345,28 @@ std::deque<int> PmergeMe::fjRecurDeq(std::deque<int> input)
 		while (mainChain[i] != pair[j].second)
 			j++;
 		pend.push_back(std::make_pair(pair[j].first, pair[j].second));
+		if ((i + 1) == mainChain.size() && struggler >= 0)
+			pend.push_back(std::make_pair(struggler, struggler));
 	}
 
 	std::deque<int>	n = jacobNumDeq(pend.size());
+
 	for (size_t i = 0; i < pend.size(); i++)
 	{
-		std::deque<int>::iterator	it = std::find(mainChain.begin(), mainChain.end(), pend[n[i]].second);
-		mainChain.insert(std::lower_bound(mainChain.begin(), it, pend[n[i]].first), pend[n[i]].first);
+		std::deque<int>::iterator	it;
+		if (pend[n[i]].first != pend[n[i]].second)
+		{
+			it = std::find(mainChain.begin(), mainChain.end(), pend[n[i]].second);
+			it = findLowerBoundDeq(mainChain.begin(), it, pend[n[i]].first);
+			mainChain.insert(it, pend[n[i]].first);
+		}
+		else
+		{
+			it = findLowerBoundDeq(mainChain.begin(), mainChain.end(), struggler);
+			mainChain.insert(it, struggler);
+		}
 	}
 	
-	if (struggler >= 0)
-		mainChain.insert(std::lower_bound(mainChain.begin(), mainChain.end(), struggler), struggler);
 	return mainChain;
 }
 
